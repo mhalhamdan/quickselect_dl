@@ -3,11 +3,12 @@ import torchvision
 from torchvision import transforms
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image, ImageDraw
-import cv2
+from PIL import Image
+import sys
 
-import time
 
+# Important transformations
+toPIL = transforms.ToPILImage()
 resize = transforms.Resize(640)
 preprocessing = transforms.Compose([transforms.Resize(640), 
                                     transforms.ToTensor()])
@@ -42,8 +43,7 @@ def initialize_model(name='deeplabv3'):
 
     return model
 
-def preprocess_image(path):
-    image = Image.open(path)
+def preprocess_image(image):
     preproc_img = preprocessing(image)
     normalized_inp = normalize(preproc_img).unsqueeze(0)
     normalized_inp.requires_grad = True
@@ -87,59 +87,39 @@ def visualize_prediction(output, nc=21):
 
     return rgb
 
-def full_image(image, mask):
-
-    trans = transforms.ToPILImage()
-    mask = trans(mask)
-    mask = mask.convert("L")
-    
+def mask_image(image, mask, save):
+    mask = toPIL(mask).convert("L")
     image = resize(image)
-
-    background = Image.new("RGBA", image.size, 0)
-    draw = ImageDraw.Draw(background)
-    print(image.size)
-    draw.rectangle((image.size, image.size), fill=255)
-
+    background = Image.new("RGBA", image.size, (255,255,255))
     result = Image.composite(background, image, mask)
+    
+    if save:
+        result.save(save)
+
     return result
 
-
-
-def test():
-
-    image = './sample.jpg'
-
-    for model_name in model_dict.values():
-        model = initialize_model(model_name)
-
-        start = time.time()
-        output = make_prediction(model, image)
-        end = time.time()
-        print(f"Inference process took {end - start} seconds using model: {model_name}")
-        
-
-def main():
-    # Test case
-    model = initialize_model(model_dict[5])
-    image = './sample.jpg'
+def run(image_path, result_path=False, plot=True, model_no=5):
+    model = initialize_model(model_dict[model_no])
+    image = Image.open(image_path)
     output = make_prediction(model, image)
 
     # Find most likely segmentation class for each pixel.
     out_max = torch.argmax(output, dim=1, keepdim=True)
     rgb = visualize_prediction(out_max.detach().cpu().squeeze().numpy())
-    # plt.imshow(rgb); plt.axis('off'); plt.show()
 
-    # Test mask applied on full_image
-    image = Image.open('./sample.jpg')
-    # image = preprocessing(image)
+    # Use mask "rgb" against original image
+    result = mask_image(image, rgb, result_path)
 
-    final = full_image(image, rgb)
-    final.save('./test2.png')
-    plt.imshow(final); plt.axis('off'); plt.show()
+    if plot:
+        # Show result
+        plt.imshow(result); plt.axis('off'); plt.show()
 
-
-
+def main():
+    # Arguments: image_path, result_path (optional)
+    if len(sys.argv) == 3:
+        run(sys.argv[1], sys.argv[2])
+    else: 
+        run(sys.argv[1])
 
 if __name__ == "__main__":
     main()
-    # test()
