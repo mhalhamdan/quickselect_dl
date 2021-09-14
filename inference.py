@@ -72,12 +72,6 @@ def visualize_prediction(output, nc=21):
     g = np.zeros_like(output).astype(np.uint8)
     b = np.zeros_like(output).astype(np.uint8)
 
-    # white = (255,255,255)
-    # idx = output == 15
-    # r[idx] = 0
-    # g[idx] = 0
-    # b[idx] = 0
-
     idx = output == 0
     r[idx] = 255
     g[idx] = 255
