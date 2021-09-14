@@ -5,4 +5,9 @@ To build environment install pipenv then:
 $ pipenv shell
 
 To run inside the environment:
-$ python3 inference.py 
+$ python3 inference.py <image_path> <result_path> <- (optional)
+
+Arguments description: 
+- image_path: path for image can be PNG or JPEG
+- result_path: path for result image to be stored in PNG or JPEG format
+
