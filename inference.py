@@ -83,8 +83,8 @@ def visualize_prediction(output, nc=21):
 
 def mask_image(image, mask, save):
     mask = toPIL(mask).convert("L")
-    image = resize(image)
-    background = Image.new("RGBA", image.size, (255,255,255))
+    image = resize(image).convert("RGBA")
+    background = Image.new("RGBA", image.size, (255,255,255,0))
     result = Image.composite(background, image, mask)
     
     if save:
@@ -105,8 +105,12 @@ def run(image_path, result_path=False, plot=True, model_no=5):
     result = mask_image(image, rgb, result_path)
 
     if plot:
-        # Show result
-        plt.imshow(result); plt.axis('off'); plt.show()
+        f, axarr = plt.subplots(1,2)
+        axarr[0].imshow(image)
+
+        axarr[1].imshow(result)
+
+        plt.show()
 
 def main():
     # Arguments: image_path, result_path (optional)
