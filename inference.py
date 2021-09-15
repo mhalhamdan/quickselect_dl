@@ -92,7 +92,7 @@ def mask_image(image, mask, save):
 
     return result
 
-def run(image_path, result_path=False, plot=True, model_no=5):
+def run(image_path, result_path=False, plot=True, model_no=6):
     model = initialize_model(model_dict[model_no])
     image = Image.open(image_path)
     output = make_prediction(model, image)
