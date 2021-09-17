@@ -9,6 +9,9 @@ torchvision = "*"
 pandas = "*"
 matplotlib = "*"
 opencv-python = "*"
+cmake = "*"
+face-recognition = "*"
+deepface = "*"
 
 [dev-packages]
 

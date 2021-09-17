@@ -94,7 +94,13 @@ def mask_image(image, mask, save):
 
 def run(image_path, result_path=False, plot=True, model_no=6):
     model = initialize_model(model_dict[model_no])
-    image = Image.open(image_path)
+    
+    # In case model initialized outside
+    if isinstance(image_path, str):
+        image = Image.open(image_path)
+    else:
+        image = image_path
+
     output = make_prediction(model, image)
 
     # Find most likely segmentation class for each pixel.
