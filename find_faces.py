@@ -54,7 +54,7 @@ def main():
             image = Image.open(image_path)
             # Problem in cropping dimensions caused by portrait versus non-portrait photos
             # TODO: if portrait: flip dimensions
-            image = image.crop((top, right*1.2, bottom/1.2, left/2.5))
+            image = image.crop((top, right, bottom, left))
             # image.show()
             # Segment image after boxing it
             run(image)
