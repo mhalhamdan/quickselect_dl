@@ -15,4 +15,4 @@ Arguments description:
 
 Sample run on example1.jpg in the examples directory:
 
-![](examples/plot1.jpg)
+![](examples/plot.jpg)
