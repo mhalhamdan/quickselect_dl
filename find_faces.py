@@ -30,6 +30,8 @@ def preprocess_image(image):
     return(normalized_inp)
 
 def main(image_path, result_path= False):
+    # TODO: Prompt user before segmenting further
+    
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
 
     image = Image.open(image_path)
@@ -44,7 +46,10 @@ def main(image_path, result_path= False):
 
     score_threshold = .95
     
-    for box, score, label in zip(output['boxes'], output['scores'], output['labels']):
+    # For box count
+    index = range(len(output['boxes']))
+
+    for idx, box, score, label in zip(index, output['boxes'], output['scores'], output['labels']):
 
         if score > score_threshold and label == 1:
             
@@ -58,8 +63,15 @@ def main(image_path, result_path= False):
             # TODO: if portrait: flip dimensions
             image = image.crop((top, right, bottom, left))
             # image.show()
+
             # Segment image after boxing it
-            run(image, result_path)
+            # Change path depending on no. of box
+            if result_path:
+                if len(index) > 1:
+                    r_path = result_path[0:-4] + str(idx) + result_path[-4:]
+                    run(image, r_path)
+                else:
+                    run(image, result_path)
 
 
 
