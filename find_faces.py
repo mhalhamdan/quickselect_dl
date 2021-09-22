@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from inference import run
+import sys
 
 preprocessing = transforms.ToTensor()
 
@@ -28,13 +29,14 @@ def preprocess_image(image):
     normalized_inp = preproc_img.unsqueeze(0)
     return(normalized_inp)
 
-def main():
-
-    image_path = './examples/example2.jpg' 
-
+def main(image_path, result_path= False):
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
 
     image = Image.open(image_path)
+
+    # If PNG, fix
+    image = image.convert('RGB')
+
     input = preprocess_image(image)
 
     model.eval()
@@ -57,10 +59,15 @@ def main():
             image = image.crop((top, right, bottom, left))
             # image.show()
             # Segment image after boxing it
-            run(image)
+            run(image, result_path)
 
 
 
 
 if __name__ == "__main__":
-    main()
+    
+    if len(sys.argv) == 2:
+        main(sys.argv[1])
+        
+    if len(sys.argv) == 3:
+        main(sys.argv[1], sys.argv[2])
