@@ -1,9 +1,7 @@
-import PIL
 from deepface import DeepFace
 import numpy as np
 import pandas as pd
 from PIL import Image
-from matplotlib import cm
 
 # Action = 'race' or 'gender' or 'age' or 'emotion'
 def face_information(image_path, action):
@@ -15,13 +13,27 @@ def face_information(image_path, action):
     else:
         return info[action]
 
-# Input: Image in Numpy Array format
+# Input: PIL image
 # Output: Bounding box in Dict format
 def detect_face(image):
     input = np.array(image)
     result = DeepFace.analyze(input, actions=['gender'], detector_backend='opencv')
 
     return result['region']
+
+# Input: PIL image
+# Output cropped PIL image
+def find_face(image):
+    result = detect_face(image)
+
+    FACTOR = 1.5
+    x = result['x']/FACTOR
+    y = result['y']/(FACTOR+1.5)
+    w = result['w']*FACTOR
+    h = result['h']*(FACTOR)
+
+    result = image.crop((x, y, w+x, h+y))
+    return result
 
 def main():
     pass

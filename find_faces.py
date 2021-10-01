@@ -4,9 +4,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
-from inference import run
 import sys
-import face_utils
 
 preprocessing = transforms.ToTensor()
 
@@ -30,34 +28,6 @@ def preprocess_image(image):
     preproc_img = preprocessing(image)
     normalized_inp = preproc_img.unsqueeze(0)
     return(normalized_inp)
-
-# Input: list of PIL images 
-# Output: None - saves files to result path
-def segment_faces(image, result_path):
-    # Segment image after boxing it
-    # Change path depending on no. of box
-    
-    if len(image) > 1:
-        for idx in range(len(image)):
-            r_path = result_path[0:-4] + str(idx) + result_path[-4:]
-            run(image, r_path)
-    else:
-        run(image, result_path)
-
-# Input: PIL image
-# Output cropped PIL image
-def find_face(image):
-    result = face_utils.detect_face(image)
-
-    FACTOR = 1.5
-    x = result['x']/FACTOR
-    y = result['y']/(FACTOR+1.5)
-    w = result['w']*FACTOR
-    h = result['h']*(FACTOR)
-
-    result = image.crop((x, y, w+x, h+y))
-    return result
-    # result.show()
     
 def find_instances(image_path, result_path= False):
     # TODO: Prompt user before segmenting further
