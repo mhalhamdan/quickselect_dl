@@ -1,10 +1,12 @@
 import torchvision
 from torchvision import transforms
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
 from inference import run
 import sys
+import face_utils
 
 preprocessing = transforms.ToTensor()
 
@@ -29,22 +31,50 @@ def preprocess_image(image):
     normalized_inp = preproc_img.unsqueeze(0)
     return(normalized_inp)
 
-def main(image_path, result_path= False):
+# Input: list of PIL images 
+# Output: None - saves files to result path
+def segment_faces(image, result_path):
+    # Segment image after boxing it
+    # Change path depending on no. of box
+    
+    if len(image) > 1:
+        for idx in range(len(image)):
+            r_path = result_path[0:-4] + str(idx) + result_path[-4:]
+            run(image, r_path)
+    else:
+        run(image, result_path)
+
+# Input: PIL image
+# Output cropped PIL image
+def find_face(image):
+    result = face_utils.detect_face(image)
+
+    FACTOR = 1.5
+    x = result['x']/FACTOR
+    y = result['y']/(FACTOR+1.5)
+    w = result['w']*FACTOR
+    h = result['h']*(FACTOR)
+
+    result = image.crop((x, y, w+x, h+y))
+    return result
+    # result.show()
+    
+def find_instances(image_path, result_path= False):
     # TODO: Prompt user before segmenting further
     
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+    model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=True)
 
     image = Image.open(image_path)
-
     # If PNG, fix
     image = image.convert('RGB')
-
     input = preprocess_image(image)
 
     model.eval()
     output = model(input)[0]
-
     score_threshold = .95
+    
+    # Store resulting images here
+    result_images = []
     
     # For box count
     index = range(len(output['boxes']))
@@ -53,33 +83,23 @@ def main(image_path, result_path= False):
 
         if score > score_threshold and label == 1:
             
-            print(f"This is a {COCO_NAMES[label]} (confidence:{score})")
-            print("with bounding boxes: ", box)
+            # print(f"This is a {COCO_NAMES[label]} (confidence:{score})")
+            # print("with bounding boxes: ", box)
 
             top, right, bottom, left = box.cpu().detach().numpy().astype(int)
             
-            image = Image.open(image_path)
             # Problem in cropping dimensions caused by portrait versus non-portrait photos
             # TODO: if portrait: flip dimensions
-            image = image.crop((top, right, bottom, left))
-            # image.show()
+            cropped = image.crop((top, right, bottom, left))
+            result_images.append(cropped)
 
-            # Segment image after boxing it
-            # Change path depending on no. of box
-            if result_path:
-                if len(index) > 1:
-                    r_path = result_path[0:-4] + str(idx) + result_path[-4:]
-                    run(image, r_path)
-                else:
-                    run(image, result_path)
-
-
+    return result_images
 
 
 if __name__ == "__main__":
     
     if len(sys.argv) == 2:
-        main(sys.argv[1])
+        find_instances(sys.argv[1])
         
     if len(sys.argv) == 3:
-        main(sys.argv[1], sys.argv[2])
+        find_instances(sys.argv[1], sys.argv[2])
