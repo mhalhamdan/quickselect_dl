@@ -120,6 +120,9 @@ def run(image_path, result_path=False, plot=False, model_no=6):
         axarr[1].imshow(result)
 
         plt.show()
+    
+    # Return final result
+    return result
 
 def main():
     # Arguments: image_path, result_path (optional)
