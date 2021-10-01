@@ -101,9 +101,6 @@ def run(image_path, result_path=False, plot=False, model_no=6):
     else:
         image = image_path
 
-    # If PNG, fix
-    image = image.convert('RGB')
-
     output = make_prediction(model, image)
 
     # Find most likely segmentation class for each pixel.
@@ -116,11 +113,9 @@ def run(image_path, result_path=False, plot=False, model_no=6):
     if plot:
         f, axarr = plt.subplots(1,2)
         axarr[0].imshow(image)
-
         axarr[1].imshow(result)
-
         plt.show()
-    
+
     # Return final result
     return result
 
