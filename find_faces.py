@@ -64,7 +64,12 @@ def find_instances(image_path, result_path= False):
     
     model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=True)
 
-    image = Image.open(image_path)
+    # If PIL Image type passed and not path
+    if isinstance(image_path, str):
+        image = Image.open(image_path)
+    else:
+        image = image_path
+
     # If PNG, fix
     image = image.convert('RGB')
     input = preprocess_image(image)
