@@ -1,4 +1,9 @@
+import PIL
 from deepface import DeepFace
+import numpy as np
+import pandas as pd
+from PIL import Image
+from matplotlib import cm
 
 # Action = 'race' or 'gender' or 'age' or 'emotion'
 def face_information(image_path, action):
@@ -9,11 +14,16 @@ def face_information(image_path, action):
     else:
         return info[action]
 
+# Input: Image in Numpy Array format
+# Output: Bounding box in Dict format
+def detect_face(image):
+    input = np.array(image)
+    result = DeepFace.analyze(input, actions=['gender'], detector_backend='opencv')
+
+    return result['region']
 
 def main():
     pass
-    # info = face_information("examples/example2.jpg", 'age')
-    # print(info)
 
 
 if __name__ == "__main__":
