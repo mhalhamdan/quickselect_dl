@@ -15,9 +15,24 @@ def face_information(image_path, action):
 
 # Input: PIL image
 # Output: Bounding box in Dict format
-def detect_face(image):
+def detect_face(image, backend='opencv'):
+    backends = ["retinaface", "mtcnn", "ssd"]
     input = np.array(image)
-    result = DeepFace.analyze(input, actions=['gender'], detector_backend='opencv')
+
+    result = {'region': None}
+    try:
+        result = DeepFace.analyze(input, actions=['gender'], detector_backend=backend)
+    except ValueError:
+        
+        for b in backends:
+            print(f"error occured, trying different backend: {b}")
+            try:
+                result = DeepFace.analyze(input, actions=['gender'], detector_backend=b)
+                return result['region']
+            except ValueError:
+                print("*changing backend.")
+
+
 
     return result['region']
 
