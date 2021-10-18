@@ -1,12 +1,29 @@
 from deepface import DeepFace
+import deepface
 import numpy as np
 import pandas as pd
 from PIL import Image
+from deepface.commons.functions import preprocess_face
+
+BACKENDS = ["retinaface", "mtcnn", "ssd"]
 
 # Action = 'race' or 'gender' or 'age' or 'emotion'
 def face_information(image_path, action):
     input = np.array(image_path)
-    info = DeepFace.analyze(input, actions=[action])
+
+    try:
+        info = DeepFace.analyze(input, actions=[action], enforce_detection=True)
+
+    except ValueError:
+        for b in BACKENDS:
+            print(f"error occured, trying different backend: {b}")
+            try:
+                info = DeepFace.analyze(input, actions=[action], detector_backend=b)
+            except ValueError:
+                print("*changing backend")
+
+        # If no face detected after exhausting all backends, disable enforce detection
+        info = DeepFace.analyze(input, actions=[action], enforce_detection=False)
 
     if action not in ['gender', 'age']:
         return max(info[action], key=info[action].get)
@@ -16,25 +33,24 @@ def face_information(image_path, action):
 # Input: PIL image
 # Output: Bounding box in Dict format
 def detect_face(image, backend='opencv'):
-    backends = ["retinaface", "mtcnn", "ssd"]
-    input = np.array(image)
 
-    result = {'region': None}
+    input = np.array(image)
     try:
-        result = DeepFace.analyze(input, actions=['gender'], detector_backend=backend)
-    except ValueError:
+        result = preprocess_face(input, detector_backend=backend, align=False, return_region=True)
         
-        for b in backends:
+    except ValueError:
+        for b in BACKENDS:
             print(f"error occured, trying different backend: {b}")
             try:
-                result = DeepFace.analyze(input, actions=['gender'], detector_backend=b)
-                return result['region']
+                result = preprocess_face(input, detector_backend=backend, align=False, return_region=True)
+                return result[1]
             except ValueError:
                 print("*changing backend.")
+        
+        # If no face detected after exhausting all backends disable enforce detection
+        result = preprocess_face(input, align=False, return_region=True, enforce_detection=False)
 
-
-
-    return result['region']
+    return result[1]
 
 # Input: PIL image
 # Output cropped PIL image
@@ -42,10 +58,10 @@ def find_face(image):
     result = detect_face(image)
 
     FACTOR = 1.5
-    x = result['x']/FACTOR
-    y = result['y']/(FACTOR+1.5)
-    w = result['w']*FACTOR
-    h = result['h']*(FACTOR)
+    x = result[0]/FACTOR
+    y = result[1]/(FACTOR+1.5)
+    w = result[2]*FACTOR
+    h = result[3]*(FACTOR)
 
     result = image.crop((x, y, w+x, h+y))
     return result
